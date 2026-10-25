@@ -1,5 +1,31 @@
 # Decisions
 
+## Riviera 2 towel-rack classification
+
+The next owner request is to apply the existing towel-rack vocabulary and
+mapping, not just name the product. The observed linked THZONE also reports
+100014 = 7, the vendor's ElectricTowelDryerHeater type; the owner confirms
+this is a Riviera 2 towel dryer. Commercial models 3424 and 804 have no
+productId in the catalogue, so OVERRIDES supplies TOWEL_RACK for those two
+known products. No override is added for room model 557 or for other rooms.
+
+The existing link resolution moves into model.py so every caller -- entity
+construction, diagnostics and discovery -- uses the same classification,
+without a circular account/model dependency. A recognised room takes the
+commercial model's ordinary mapping, but keeps its own technical modelId
+and deviceId. It therefore gets the standard off/heat modes, per_type
+override-duration names and the existing presence-mode exclusion. It no
+longer inherits the generic room's fan, louver or Powerful preset wiring.
+The existing 104044 boost switch is left as it was, not wired into a new
+climate preset. Other generic capability labels remain the upstream ones.
+The room's existing eco/absence-setpoint suppressions are preserved, rather
+than enable unvalidated controls through the towel-rack type's defaults.
+
+There is no change to capability_table.py, climate.py, API writes, polling,
+pairing or entity unique ids. The model snapshots gain only catalogue IDs
+804 and 3424; their mapping digests change to the existing towel-rack
+answer. No hardware-control validation is claimed by these offline tests.
+
 ## Riviera 2 product naming
 
 An owner's CozyBox reports a room slot (model 557, product 26) whose
@@ -16,10 +42,10 @@ inferred from the former. Other products and ambiguous links keep their
 existing names. Discovery preserves an app custom name and adds the named
 zone where available. The device registry carries the commercial name.
 
-This is presentation only: no type, mode, capability, API request,
-polling interval, existing subentry title or unique id changes. No change
-to model.py, no new override keyed on 557, and no snapshot regeneration.
-Tests use synthetic metadata and verify that mapping answers remain equal.
+The initial naming change was presentation only: it did not alter types,
+modes, capabilities, API requests, polling, subentry titles or unique ids.
+It did not touch model.py or regenerate snapshots. The later native-type
+change is described above; no override is ever keyed on the shared 557.
 
 Why the configuration is what it is. The workflows and the config files say
 what happens ; this file says why, so that the reasoning does not have to sit

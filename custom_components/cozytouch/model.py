@@ -431,6 +431,7 @@ OVERRIDES: dict[int, dict] = {
         "HeatingModes": MANUAL_ECO_PROG,
         "type": CozytouchDeviceType.WATER_HEATER,
     },
+    804: {"type": CozytouchDeviceType.TOWEL_RACK},
     957: {
         "HVACModes": OFF_HEAT,
         "HeatingModes": MANUAL_ECO_PROG,
@@ -450,6 +451,7 @@ OVERRIDES: dict[int, dict] = {
     1955: {"HeatingModes": {0: "manual", 3: "eco_plus"}},
     1956: {"HeatingModes": {0: "manual", 3: "eco_plus"}},
     1957: {"HeatingModes": {0: "manual", 3: "eco_plus"}},
+    3424: {"type": CozytouchDeviceType.TOWEL_RACK},
 }
 
 # The only names the vendor's catalogue does not carry. Everything else is
@@ -508,6 +510,47 @@ def apply_capabilities(
     )
 
 
+def room_product_model_id(devices: list[dict], dev: dict) -> int | None:
+    """The catalogue product explicitly linked to a CozyBox room.
+
+    See docs/decisions.md, Riviera 2 towel-rack classification.
+    """
+    productId = dev.get("productId") or PRODUCT_IDS.get(dev["modelId"])
+    if product_type(productId) != "ROOM":
+        return None
+    masterId = dev.get("masterDeviceId")
+    master = next((d for d in devices if d["deviceId"] == masterId), None)
+    if not master or master.get("modelFamily") != "Connectivity_Box":
+        return None
+    children = {
+        tag["value"] for tag in dev.get("tags") or ()
+        if isinstance(tag, dict) and tag.get("label") == "iothubChildrenIds"
+        and isinstance(tag.get("value"), str)
+    }
+    linked = [
+        child for child in devices
+        if child.get("name") in children
+        and str(child.get("name", "")).startswith("THZONE_")
+        and child.get("masterDeviceId") == masterId
+    ]
+    if len(linked) != 1 or not isinstance(linked[0].get("longName"), str):
+        return None
+    reported = " ".join(linked[0]["longName"].split()).casefold()
+    return next(
+        (
+            modelId for modelId in (3424, 804)
+            if " ".join(MODEL_CATALOGUE[modelId].split()).casefold() == reported
+        ),
+        None,
+    )
+
+
+def room_product_name(devices: list[dict], dev: dict) -> str | None:
+    """The linked commercial name, independently of the control model id."""
+    modelId = room_product_model_id(devices, dev)
+    return MODEL_CATALOGUE[modelId] if modelId is not None else None
+
+
 def get_device_model_infos(
     devices: list[dict], dev: dict, zoneName: str | None = None
 ) -> ModelInfos:
@@ -524,7 +567,11 @@ def get_device_model_infos(
         (found for found in devices if found["deviceId"] == masterDeviceId), None
     )
 
-    return get_model_infos(
+    capabilities = {
+        int(found["capabilityId"]): found["value"]
+        for found in dev.get("capabilities") or ()
+    }
+    modelInfos = get_model_infos(
         dev["modelId"],
         zoneName,
         dev.get("name"),
@@ -533,10 +580,7 @@ def get_device_model_infos(
         modelFamily=dev.get("modelFamily"),
         masterProductId=master.get("productId") if master else None,
         masterFamily=master.get("modelFamily") if master else None,
-        capabilities={
-            int(found["capabilityId"]): found["value"]
-            for found in dev.get("capabilities") or ()
-        },
+        capabilities=capabilities,
         # What the API calls the device, for hardware the catalogue does not
         # name. "---" is what it sends for a zone rather than leaving the
         # field out, so it is read as nothing. See docs/decisions.md.
@@ -549,6 +593,17 @@ def get_device_model_infos(
             None,
         ),
     )
+    if modelInfos.type is CozytouchDeviceType.ROOM:
+        productModelId = room_product_model_id(devices, dev)
+        if productModelId is not None:
+            productInfos = get_model_infos(productModelId, capabilities=capabilities)
+            productInfos.modelId = dev["modelId"]
+            # Keep the room's existing control suppressions; see docs/decisions.md.
+            for flag in ("awayModeTemperatureAvailable", "ecoModeAvailable"):
+                if flag in modelInfos:
+                    productInfos[flag] = modelInfos[flag]
+            modelInfos = productInfos
+    return modelInfos
 
 
 def get_model_infos(

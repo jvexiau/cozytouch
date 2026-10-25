@@ -23,8 +23,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .capability_table import CAPABILITIES
 from .const import COZYTOUCH_ATLANTIC_API, COZYTOUCH_CLIENT_ID
-from .model import CozytouchDeviceType, get_device_model_infos
-from .model_catalogue import MODEL_CATALOGUE
+from .model import CozytouchDeviceType, get_device_model_infos, room_product_name
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -120,40 +119,6 @@ def why(err: BaseException) -> str:
     `asyncio.TimeoutError` stringifies to "". See docs/decisions.md.
     """
     return str(err) or type(err).__name__
-
-
-def room_product_name(devices: list[dict], dev: dict) -> str | None:
-    """The reported Riviera product behind a room, without changing its mapping.
-
-    See docs/decisions.md, Riviera 2 product naming.
-    """
-    if get_device_model_infos(devices, dev).type is not CozytouchDeviceType.ROOM:
-        return None
-    masterId = dev.get("masterDeviceId")
-    master = next((d for d in devices if d["deviceId"] == masterId), None)
-    if not master or master.get("modelFamily") != "Connectivity_Box":
-        return None
-    children = {
-        tag["value"] for tag in dev.get("tags") or ()
-        if isinstance(tag, dict) and tag.get("label") == "iothubChildrenIds"
-        and isinstance(tag.get("value"), str)
-    }
-    linked = [
-        child for child in devices
-        if child.get("name") in children
-        and str(child.get("name", "")).startswith("THZONE_")
-        and child.get("masterDeviceId") == masterId
-    ]
-    if len(linked) != 1 or not isinstance(linked[0].get("longName"), str):
-        return None
-    reported = " ".join(linked[0]["longName"].split()).casefold()
-    return next(
-        (
-            MODEL_CATALOGUE[modelId] for modelId in (3424, 804)
-            if " ".join(MODEL_CATALOGUE[modelId].split()).casefold() == reported
-        ),
-        None,
-    )
 
 
 class CozytouchAccount:

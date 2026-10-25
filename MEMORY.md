@@ -47,8 +47,10 @@ overturn one, edit the line here in the same pull request.
   (234-288). Check that list before reverse-engineering an id in that range.
 - **Riviera discovery:** a CozyBox room's explicit iothubChildrenIds link
   names a THZONE whose longName identifies RIVIERA 2 1750W (catalogue 3424).
-  Use it for presentation only, never to retype all 557s or change modes.
-  `docs/decisions.md`, *Riviera 2 product naming*.
+  The known commercial models 3424/804 use the native TOWEL_RACK override;
+  a linked room inherits it without changing its control model/device id.
+  Never override all 557s. `docs/decisions.md`, *Riviera 2 product naming*
+  and *Riviera 2 towel-rack classification*.
 
 ## Rejected — do not re-propose
 

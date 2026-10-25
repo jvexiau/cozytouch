@@ -1,4 +1,4 @@
-"""Riviera discovery names the product without changing any control mapping.
+"""Riviera discovery names the product while keeping its control identity.
 
 Only the reported ROOM -> THZONE link on one CozyBox supplies the name.
 Fixtures are synthetic; no account, API call or running HA is involved.

@@ -13280,6 +13280,19 @@
   "name": "PERFINOX 4134 VI R",
   "type": "gaz_boiler"
  },
+ "3424": {
+  "HVACModes": {
+   "0": "off",
+   "4": "heat"
+  },
+  "HVACModesCapabilityId": [
+   7,
+   8
+  ],
+  "modelId": 3424,
+  "name": "RIVIERA 2 1750W",
+  "type": "towel_rack"
+ },
  "343": {
   "HVACModes": {
    "0": "off",
@@ -16219,6 +16232,19 @@
   "modelId": 80,
   "name": "Alfea Excellia AI UE: 11kW1Phi, 14kW1Phi App: 6kW",
   "type": "heat_pump"
+ },
+ "804": {
+  "HVACModes": {
+   "0": "off",
+   "4": "heat"
+  },
+  "HVACModesCapabilityId": [
+   7,
+   8
+  ],
+  "modelId": 804,
+  "name": "RIVIERA 2 1750W BLC SAT",
+  "type": "towel_rack"
  },
  "81": {
   "HVACModes": {
