@@ -65,7 +65,14 @@ def _device_options(
     """
     return [
         selector.SelectOptionDict(
-            label=f"{device['name']} ({device['model']})",
+            label=(
+                device["name"]
+                if device.get("product_name") and (
+                    device["name"] == device["model"]
+                    or device["name"].startswith(f"{device['model']} (")
+                )
+                else f"{device['name']} ({device['model']})"
+            ),
             value=str(device["deviceId"]),
         )
         for device in devices

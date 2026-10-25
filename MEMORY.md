@@ -45,6 +45,10 @@ overturn one, edit the line here in the same pull request.
   added. Both from the 2026-09-25 dump, `docs/decisions.md`.
 - **Atlantic named eleven hot-water ids once**, on gduteil/cozytouch#129
   (234-288). Check that list before reverse-engineering an id in that range.
+- **Riviera discovery:** a CozyBox room's explicit iothubChildrenIds link
+  names a THZONE whose longName identifies RIVIERA 2 1750W (catalogue 3424).
+  Use it for presentation only, never to retype all 557s or change modes.
+  `docs/decisions.md`, *Riviera 2 product naming*.
 
 ## Rejected — do not re-propose
 

@@ -26,6 +26,7 @@ from .account import (
     CozytouchAccount,
     CozytouchApiError,
     CozytouchRateLimited,
+    room_product_name,
 )
 from .capability import get_capability_infos
 from .capability_table import CAPABILITIES
@@ -428,9 +429,13 @@ class Hub(DataUpdateCoordinator):
                         zoneId = masterDev["zoneId"]
                         break
 
-        return get_device_model_infos(
+        modelInfos = get_device_model_infos(
             self._account.devices, dev, self.get_zone_name(zoneId)
         )
+        modelInfos.name = (
+            room_product_name(self._account.devices, dev) or modelInfos.name
+        )
+        return modelInfos
 
     def get_model_id(self, deviceId: int | None = None) -> int | None:
         """The model id the API reports, which is what the mapping is keyed on."""

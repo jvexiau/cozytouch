@@ -1,5 +1,26 @@
 # Decisions
 
+## Riviera 2 product naming
+
+An owner's CozyBox reports a room slot (model 557, product 26) whose
+iothubChildrenIds tag names THZONE_0. That linked object's longName is
+RIVIERA 2 1750W, already catalogue model 3424. The slot is the control
+target, not a commercial product; the linked name can identify it without
+retyping the room or guessing modes from its catalogue label.
+
+Only a room behind a Connectivity_Box, with exactly one explicitly linked
+THZONE on the same gateway and an exact supported catalogue name, gets the
+product label. Case and whitespace are normalised. The observed 1750 W
+name and its full BLC SAT label (804) are supported; the latter is never
+inferred from the former. Other products and ambiguous links keep their
+existing names. Discovery preserves an app custom name and adds the named
+zone where available. The device registry carries the commercial name.
+
+This is presentation only: no type, mode, capability, API request,
+polling interval, existing subentry title or unique id changes. No change
+to model.py, no new override keyed on 557, and no snapshot regeneration.
+Tests use synthetic metadata and verify that mapping answers remain equal.
+
 Why the configuration is what it is. The workflows and the config files say
 what happens ; this file says why, so that the reasoning does not have to sit
 as a comment block on top of every setting.
